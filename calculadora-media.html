@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Média — Calculadora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink:#F6C6CB;
+    --orange:#E8752C;
+    --surface:#FFFFFF;
+    --surface-2:#FDEDEF;
+    --hairline:rgba(232,117,44,0.3);
+    --hairline-strong:rgba(232,117,44,0.55);
+    --text:#3A2E2A;
+    --text-muted:#8C7370;
+    --gold:#2E7D46;
+    --coral:#C6433C;
+    --teal:#2F6F8F;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background-color:var(--pink);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(232,117,44,0.4) 0 1.5px, transparent 1.5px 28px),
+      repeating-linear-gradient(90deg, rgba(232,117,44,0.4) 0 1.5px, transparent 1.5px 28px);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    padding:2.5rem 1.25rem 5rem;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+  header{margin-bottom:2.25rem;border-bottom:2px dashed var(--hairline-strong);padding-bottom:1.5rem;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--orange);margin:0 0 .6rem;}
+  h1{
+    font-family:'Fredoka',sans-serif;font-weight:700;font-size:52px;letter-spacing:.01em;
+    text-transform:uppercase;line-height:1;margin:0 0 .7rem;color:var(--gold);
+    -webkit-text-stroke:2px #FFFFFF;paint-order:stroke fill;
+  }
+  .sub{font-size:14px;color:var(--text-muted);margin:0;line-height:1.6;}
+
+  section.card{
+    background:var(--surface);
+    border:2px solid var(--hairline);
+    border-radius:var(--radius);
+    padding:1.5rem 1.5rem 1.75rem;
+    margin-bottom:1.25rem;
+    position:relative;
+  }
+  .card-head{position:relative;display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin-bottom:1.6rem;padding-bottom:.9rem;}
+  .card-head::after{
+    content:'';position:absolute;left:-1.5rem;right:-1.5rem;bottom:-2px;height:11px;
+    background-image:radial-gradient(circle at 6px 6px, var(--pink) 5px, transparent 5.5px);
+    background-size:16px 11px;background-repeat:repeat-x;background-position:left top;
+  }
+  .card-tag{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:var(--orange);letter-spacing:.08em;text-transform:uppercase;}
+  .card-title{font-family:'Fredoka',sans-serif;font-size:19px;font-weight:600;margin:.2rem 0 0;color:var(--gold);}
+  .card-hint{font-size:12.5px;color:var(--text-muted);margin:.3rem 0 0;line-height:1.5;}
+
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:.4rem;}
+  .field{display:flex;flex-direction:column;gap:.4rem;}
+  .field label{font-size:12.5px;color:var(--text-muted);}
+  .field input{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:16px;
+    font-weight:500;
+    background:var(--surface-2);
+    border:1px solid var(--hairline-strong);
+    border-radius:8px;
+    color:var(--text);
+    padding:.6rem .7rem;
+    width:100%;
+  }
+  .field input:focus{outline:none;border-color:var(--gold);}
+  .field input.err{border-color:var(--coral);}
+  .field-err{font-size:11.5px;color:var(--coral);min-height:14px;margin-top:-2px;}
+
+  .result-line{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:1rem;padding-top:1rem;border-top:1px dashed var(--hairline-strong);
+  }
+  .result-label{font-size:13px;color:var(--text-muted);}
+  .result-value{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:600;color:var(--gold);}
+  .result-value.small{font-size:20px;}
+
+  .ruler-wrap{margin-top:1.1rem;}
+  .ruler{position:relative;height:10px;border-radius:999px;overflow:hidden;display:flex;}
+  .ruler .zone{height:100%;}
+  .ruler-zone-labels{display:flex;justify-content:space-between;margin-top:.5rem;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.05em;color:var(--text-muted);}
+  .marker-track{position:relative;height:26px;margin-top:2px;}
+  .marker{position:absolute;top:0;transform:translateX(-50%);transition:left .35s ease;text-align:center;}
+  .marker .pin{width:2px;height:10px;background:var(--text);margin:0 auto 3px;}
+  .marker .val{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;background:var(--surface-2);border:1px solid var(--hairline-strong);padding:2px 6px;border-radius:6px;white-space:nowrap;color:var(--text);}
+
+  .verdict{
+    margin-top:1.1rem;padding:1rem 1.1rem;border-radius:10px;font-size:13.5px;line-height:1.6;
+    background:var(--surface-2);border:1px dashed var(--hairline-strong);color:var(--text);
+  }
+  .verdict.pass{border-color:rgba(46,125,70,0.4);background:rgba(46,125,70,0.08);}
+  .verdict.warn{border-color:rgba(47,111,143,0.4);background:rgba(47,111,143,0.08);}
+  .verdict.fail{border-color:rgba(198,67,60,0.4);background:rgba(198,67,60,0.08);}
+  .verdict strong{
+    display:inline-block;font-family:'Fredoka',sans-serif;font-size:13px;font-weight:600;
+    letter-spacing:.03em;text-transform:uppercase;padding:.35rem .65rem;border-radius:6px;
+    transform:rotate(-2.5deg);margin-bottom:.55rem;
+  }
+  .verdict.pass strong{border:2px solid var(--gold);color:var(--gold);}
+  .verdict.warn strong{border:2px solid var(--teal);color:var(--teal);}
+  .verdict.fail strong{border:2px solid var(--coral);color:var(--coral);}
+
+  .choice-row{display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap;}
+  .choice-btn{
+    flex:1;min-width:150px;
+    font-family:'Inter',sans-serif;font-size:13px;font-weight:500;
+    background:var(--surface-2);border:1px solid var(--hairline-strong);color:var(--text);
+    border-radius:8px;padding:.7rem .8rem;cursor:pointer;text-align:left;line-height:1.4;
+  }
+  .choice-btn:hover{border-color:var(--gold);}
+  .choice-btn.active{border-color:var(--gold);background:rgba(46,125,70,0.1);}
+  .choice-btn .k{display:block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--teal);letter-spacing:.05em;margin-bottom:.25rem;}
+
+  .fee-note{display:flex;align-items:center;gap:.4rem;font-size:11.5px;color:var(--text-muted);margin-top:.6rem;}
+  .fee-dot{width:5px;height:5px;border-radius:50%;background:var(--coral);flex-shrink:0;}
+
+  .hidden{display:none !important;}
+
+  footer{margin-top:2rem;padding-top:1.25rem;border-top:2px dashed var(--hairline-strong);display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;}
+  footer p{font-size:11.5px;color:var(--text-muted);margin:0;line-height:1.5;max-width:340px;}
+  .footer-right{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;}
+  .credit{font-family:'Fredoka',sans-serif;font-size:13px;font-weight:700;letter-spacing:.03em;color:var(--gold);white-space:nowrap;-webkit-text-stroke:0.6px #FFFFFF;paint-order:stroke fill;}
+  .reset-btn{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;background:none;border:1px solid var(--hairline-strong);
+    color:var(--text-muted);padding:.55rem 1rem;border-radius:8px;cursor:pointer;white-space:nowrap;
+  }
+  .reset-btn:hover{color:var(--text);border-color:var(--text-muted);}
+
+  @media (max-width:420px){
+    .field-row{grid-template-columns:1fr;}
+    h1{font-size:38px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .marker{transition:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Boletim da disciplina</p>
+    <h1>Média</h1>
+    <p class="sub">Preencha as notas conforme forem saindo. O cálculo segue exatamente as regras de aprovação da disciplina — N1, N2, média (MD), 2ª chamada, exame e recuperação.</p>
+  </header>
+
+  <section class="card" id="card-n1">
+    <div class="card-head">
+      <div>
+        <p class="card-tag">N1 — peso 30%</p>
+        <p class="card-title">Atividades Pedagógicas Online (APOL)</p>
+        <p class="card-hint">Duas APOL por fase. Use a maior nota entre as tentativas de cada uma.</p>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="apol1">APOL 1 (maior tentativa)</label>
+        <input type="number" id="apol1" inputmode="decimal" min="0" max="100" placeholder="0–100">
+        <div class="field-err" id="err-apol1"></div>
+      </div>
+      <div class="field">
+        <label for="apol2">APOL 2 (maior tentativa)</label>
+        <input type="number" id="apol2" inputmode="decimal" min="0" max="100" placeholder="0–100">
+        <div class="field-err" id="err-apol2"></div>
+      </div>
+    </div>
+    <div class="result-line">
+      <span class="result-label">N1 = (APOL1 + APOL2) / 2</span>
+      <span class="result-value small" id="out-n1">—</span>
+    </div>
+  </section>
+
+  <section class="card" id="card-n2">
+    <div class="card-head">
+      <div>
+        <p class="card-tag">N2 — peso 70%</p>
+        <p class="card-title">Prova Mista</p>
+        <p class="card-hint">10 questões objetivas (peso 40% na prova) + 1 discursiva (peso 60% na prova).</p>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="n2-obj">Nota objetivas</label>
+        <input type="number" id="n2-obj" inputmode="decimal" min="0" max="100" placeholder="0–100">
+        <div class="field-err" id="err-n2-obj"></div>
+      </div>
+      <div class="field">
+        <label for="n2-disc">Nota discursiva</label>
+        <input type="number" id="n2-disc" inputmode="decimal" min="0" max="100" placeholder="0–100">
+        <div class="field-err" id="err-n2-disc"></div>
+      </div>
+    </div>
+    <div class="result-line">
+      <span class="result-label">N2 = (objetivas × 0,4) + (discursiva × 0,6)</span>
+      <span class="result-value small" id="out-n2">—</span>
+    </div>
+  </section>
+
+  <section class="card hidden" id="card-md">
+    <div class="card-head">
+      <div>
+        <p class="card-tag">MD</p>
+        <p class="card-title">Média da fase regular</p>
+        <p class="card-hint">MD = (N1 × 3 + N2 × 7) / 10</p>
+      </div>
+      <span class="result-value" id="out-md">—</span>
+    </div>
+    <div class="ruler-wrap">
+      <div class="ruler" id="ruler-md"></div>
+      <div class="ruler-zone-labels"><span>0 · reprovado</span><span>30 · condicional</span><span>70 · aprovado</span><span>100</span></div>
+      <div class="marker-track" id="marker-track-md"></div>
+    </div>
+    <div class="verdict" id="verdict-md"></div>
+  </section>
+
+  <section class="card hidden" id="card-branch">
+    <div class="card-head">
+      <div>
+        <p class="card-tag">Próximo passo</p>
+        <p class="card-title" id="branch-title">Sua MD ficou entre 30 e 69</p>
+      </div>
+    </div>
+    <div class="choice-row" id="branch-choices">
+      <button class="choice-btn" data-choice="2a" type="button">
+        <span class="k">Opcional</span>
+        2ª Chamada / Substitutiva — tenta subir a MD antes do exame
+      </button>
+      <button class="choice-btn" data-choice="exame" type="button">
+        <span class="k">Direto</span>
+        Ir direto para o Exame
+      </button>
+    </div>
+    <div class="fee-note" id="fee-2a"><span class="fee-dot"></span>Há uma taxa para liberar a 2ª chamada/substitutiva.</div>
+  </section>
+
+  <section class="card hidden" id="card-2a">
+    <div class="card-head">
+      <div>
+        <p class="card-tag">2ª Chamada / Substitutiva</p>
+        <p class="card-title">Prova mista</p>
+        <p class="card-hint">Mesmo cálculo: (objetivas × 0,4) + (discursiva × 0,6). Vale a maior nota entre a MD regular e esta prova.</p>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="a2-obj">Nota objetivas</label>
+        <input type="number" id="a2-obj" inputmode="decimal" min="0" max="100" placeholder="0–100">
+        <div class="field-err" id="err-a2-obj"></div>
+      </div>
+      <div class="field">
+        <label for="a2-disc">Nota discursiva</label>
+        <input type="number" id="a2-disc" inputmode="decimal" min="0" max="100" placeholder="0–100">
+        <div class="field-err" id="err-a2-disc"></div>
+      </div>
+    </div>
+    <div class="result-line">
+      <span class="result-label">Nota da 2ª chamada</span>
+      <span class="result-value small" id="out-2a">—</span>
+    </div>
+    <div class="result-line" style="border-top:none;padding-top:.3rem;margin-top:.3rem;">
+      <span class="result-label">Nova MD (maior valor)</span>
+      <span class="result-value small" id="out-md-final">—</span>
+    </div>
+    <div class="verdict" id="verdict-2a"></div>
+  </section>
+
+  <section class="card hidden" id="card-exame">
+    <div class="card-head">
+      <div>
+        <p class="card-tag">Exame</p>
+        <p class="card-title">Prova mista do exame</p>
+        <p class="card-hint">Sem taxa. ME = (MD + nota da prova mista do exame) / 2</p>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="ex-obj">Nota objetivas</label>
+        <input type="number" id="ex-obj" inputmode="decimal" min="0" max="100" placeholder="0–100">
+        <div class="field-err" id="err-ex-obj"></div>
+      </div>
+      <div class="field">
+        <label for="ex-disc">Nota discursiva</label>
+        <input type="number" id="ex-disc" inputmode="decimal" min="0" max="100" placeholder="0–100">
+        <div class="field-err" id="err-ex-disc"></div>
+      </div>
+    </div>
+    <div class="result-line">
+      <span class="result-label">Nota da prova mista do exame</span>
+      <span class="result-value small" id="out-ex-nota">—</span>
+    </div>
+    <div class="result-line" style="border-top:none;padding-top:.3rem;margin-top:.3rem;">
+      <span class="result-label">ME = (MD + nota) / 2</span>
+      <span class="result-value" id="out-me">—</span>
+    </div>
+    <div class="ruler-wrap">
+      <div class="ruler" id="ruler-me"></div>
+      <div class="ruler-zone-labels"><span>0 · reprovado</span><span>50 · aprovado</span><span>100</span></div>
+      <div class="marker-track" id="marker-track-me"></div>
+    </div>
+    <div class="verdict" id="verdict-ex"></div>
+  </section>
+
+  <section class="card hidden" id="card-rcp">
+    <div class="card-head">
+      <div>
+        <p class="card-tag">Recuperação (RCP)</p>
+        <p class="card-title">Prova mista de recuperação</p>
+        <p class="card-hint">Mesmo cálculo da prova mista. Nota ≥ 50 aprova.</p>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="rcp-obj">Nota objetivas</label>
+        <input type="number" id="rcp-obj" inputmode="decimal" min="0" max="100" placeholder="0–100">
+        <div class="field-err" id="err-rcp-obj"></div>
+      </div>
+      <div class="field">
+        <label for="rcp-disc">Nota discursiva</label>
+        <input type="number" id="rcp-disc" inputmode="decimal" min="0" max="100" placeholder="0–100">
+        <div class="field-err" id="err-rcp-disc"></div>
+      </div>
+    </div>
+    <div class="result-line">
+      <span class="result-label">Nota da recuperação</span>
+      <span class="result-value" id="out-rcp">—</span>
+    </div>
+    <div class="fee-note"><span class="fee-dot"></span>Há uma taxa para a prova de recuperação.</div>
+    <div class="verdict" id="verdict-rcp"></div>
+  </section>
+
+  <section class="card hidden" id="card-rt">
+    <div class="card-head">
+      <div>
+        <p class="card-tag">Regime Tutorial</p>
+        <p class="card-title">Refazer a disciplina</p>
+      </div>
+    </div>
+    <div class="verdict fail">
+      <strong>Solicitar Regime Tutorial (RT)</strong>
+      Você refaz a disciplina em um módulo posterior à sua escolha. Verifique o período de solicitação no Calendário Acadêmico do AVA, para o módulo em que quer recursar.
+    </div>
+  </section>
+
+  <footer>
+    <p>Cálculo baseado nas regras oficiais de composição de média da disciplina (N1 30% + N2 70%, exame e recuperação). Confira sempre no AVA em "Simular Notas".</p>
+    <div class="footer-right">
+      <span class="credit">feito por @euomnadesign</span>
+      <button class="reset-btn" id="reset-btn" type="button">Reiniciar</button>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+
+  function toNum(v){
+    if(v === '' || v === null || v === undefined) return null;
+    var n = parseFloat(String(v).replace(',', '.'));
+    return isNaN(n) ? null : n;
+  }
+  function fmt(n){
+    if(n === null || n === undefined || isNaN(n)) return '—';
+    var r = Math.round(n * 100) / 100;
+    return (Math.abs(r - Math.round(r)) < 0.005) ? String(Math.round(r)) : r.toFixed(2).replace(/0+$/,'').replace(/\.$/,'');
+  }
+  function clampPct(n){ return Math.max(0, Math.min(100, n)); }
+
+  function validateField(inputEl, errEl){
+    var raw = inputEl.value;
+    if(raw === ''){ inputEl.classList.remove('err'); errEl.textContent=''; return null; }
+    var n = toNum(raw);
+    if(n === null || n < 0 || n > 100){
+      inputEl.classList.add('err');
+      errEl.textContent = 'Digite um valor entre 0 e 100.';
+      return null;
+    }
+    inputEl.classList.remove('err');
+    errEl.textContent = '';
+    return n;
+  }
+
+  function renderRuler(container, zones){
+    container.innerHTML = '';
+    zones.forEach(function(z){
+      var el = document.createElement('div');
+      el.className = 'zone';
+      el.style.width = z.width + '%';
+      el.style.background = z.color;
+      container.appendChild(el);
+    });
+  }
+
+  function renderMarker(track, value, label){
+    track.innerHTML = '';
+    if(value === null) return;
+    var v = clampPct(value);
+    var m = document.createElement('div');
+    m.className = 'marker';
+    m.style.left = v + '%';
+    m.innerHTML = '<div class="val">' + label + '</div><div class="pin"></div>';
+    track.appendChild(m);
+  }
+
+  var ZONES_MD = [
+    {width:30, color:'#C6433C'},
+    {width:40, color:'#2F6F8F'},
+    {width:30, color:'#2E7D46'}
+  ];
+  var ZONES_50 = [
+    {width:50, color:'#C6433C'},
+    {width:50, color:'#2E7D46'}
+  ];
+
+  renderRuler($('ruler-md'), ZONES_MD);
+  renderRuler($('ruler-me'), ZONES_50);
+
+  var apol1 = $('apol1'), apol2 = $('apol2');
+  var n2obj = $('n2-obj'), n2disc = $('n2-disc');
+
+  var cardMD = $('card-md'), cardBranch = $('card-branch'), card2a = $('card-2a'),
+      cardExame = $('card-exame'), cardRCP = $('card-rcp'), cardRT = $('card-rt');
+
+  var currentChoice = null;
+  var mdBaseForExame = null;
+
+  function hide(el){ el.classList.add('hidden'); }
+  function show(el){ el.classList.remove('hidden'); }
+
+  function resetDownstream(from){
+    var order = ['branch','2a','exame','rcp','rt'];
+    var idx = order.indexOf(from);
+    var map = {branch:cardBranch, '2a':card2a, exame:cardExame, rcp:cardRCP, rt:cardRT};
+    for(var i = idx; i < order.length; i++){ hide(map[order[i]]); }
+    if(idx <= order.indexOf('branch')){ currentChoice = null; }
+  }
+
+  function calcMistaScore(objId, discId, errObjId, errDiscId){
+    var obj = validateField($(objId), $(errObjId));
+    var disc = validateField($(discId), $(errDiscId));
+    if(obj === null || disc === null) return null;
+    return obj * 0.4 + disc * 0.6;
+  }
+
+  function recalc(){
+    var a1 = validateField(apol1, $('err-apol1'));
+    var a2 = validateField(apol2, $('err-apol2'));
+    var n1 = (a1 !== null && a2 !== null) ? (a1 + a2) / 2 : null;
+    $('out-n1').textContent = fmt(n1);
+
+    var n2 = calcMistaScore('n2-obj','n2-disc','err-n2-obj','err-n2-disc');
+    $('out-n2').textContent = fmt(n2);
+
+    if(n1 === null || n2 === null){
+      hide(cardMD);
+      resetDownstream('branch');
+      return;
+    }
+
+    var md = (n1 * 3 + n2 * 7) / 10;
+    show(cardMD);
+    $('out-md').textContent = fmt(md);
+    renderMarker($('marker-track-md'), md, fmt(md));
+
+    var verdictEl = $('verdict-md');
+    resetDownstream('branch');
+
+    if(md >= 70){
+      verdictEl.className = 'verdict pass';
+      verdictEl.innerHTML = '<strong>Aprovado direto por média</strong>Nenhuma prova adicional é necessária.';
+    } else if(md >= 30){
+      verdictEl.className = 'verdict warn';
+      verdictEl.innerHTML = '<strong>Média entre 30 e 69 — você tem duas opções</strong>Fazer a 2ª chamada/substitutiva para tentar subir a média, ou ir direto para o exame.';
+      show(cardBranch);
+      $('branch-title').textContent = 'Sua MD ficou em ' + fmt(md) + ' (faixa 30–69)';
+      $('branch-choices').classList.remove('hidden');
+      $('fee-2a').classList.remove('hidden');
+      mdBaseForExame = md;
+    } else {
+      verdictEl.className = 'verdict fail';
+      verdictEl.innerHTML = '<strong>Média abaixo de 30</strong>Você precisa solicitar a 2ª chamada/substitutiva obrigatoriamente e obter nota igual ou maior que 70 nessa prova.';
+      show(cardBranch);
+      $('branch-title').textContent = 'MD ' + fmt(md) + ' — 2ª chamada obrigatória';
+      $('branch-choices').classList.add('hidden');
+      $('fee-2a').classList.remove('hidden');
+      show(card2a);
+      mdBaseForExame = md;
+    }
+  }
+
+  document.querySelectorAll('.choice-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.choice-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentChoice = btn.getAttribute('data-choice');
+      resetDownstream('2a');
+      if(currentChoice === '2a'){
+        show(card2a);
+      } else {
+        show(cardExame);
+      }
+    });
+  });
+
+  function recalc2a(){
+    if(card2a.classList.contains('hidden')) return;
+    var nota2a = calcMistaScore('a2-obj','a2-disc','err-a2-obj','err-a2-disc');
+    $('out-2a').textContent = fmt(nota2a);
+    if(nota2a === null || mdBaseForExame === null){
+      $('out-md-final').textContent = '—';
+      hide(cardExame); hide(cardRCP); hide(cardRT);
+      $('verdict-2a').innerHTML = '';
+      $('verdict-2a').className = 'verdict';
+      return;
+    }
+    var mdFinal = Math.max(mdBaseForExame, nota2a);
+    $('out-md-final').textContent = fmt(mdFinal);
+    var v = $('verdict-2a');
+    hide(cardExame); hide(cardRCP); hide(cardRT);
+
+    if(mdBaseForExame < 30 && nota2a < 30){
+      v.className = 'verdict fail';
+      v.innerHTML = '<strong>Nota da 2ª chamada continua abaixo de 30</strong>Solicite o Regime Tutorial diretamente — não há acesso ao exame nesse caso.';
+      show(cardRT);
+    } else if(mdFinal >= 70){
+      v.className = 'verdict pass';
+      v.innerHTML = '<strong>Aprovado</strong>Com a maior nota entre a MD regular e a 2ª chamada, você atingiu 70 ou mais.';
+    } else {
+      v.className = 'verdict warn';
+      v.innerHTML = '<strong>Ainda entre 30 e 69 — siga para o exame</strong>A nova MD (' + fmt(mdFinal) + ') será usada na conta do exame.';
+      show(cardExame);
+    }
+  }
+
+  function recalcExame(){
+    if(cardExame.classList.contains('hidden')) return;
+    var notaEx = calcMistaScore('ex-obj','ex-disc','err-ex-obj','err-ex-disc');
+    $('out-ex-nota').textContent = fmt(notaEx);
+
+    var baseMD = mdBaseForExame;
+    if(currentChoice === '2a' || (mdBaseForExame !== null && mdBaseForExame < 30)){
+      var nota2a = toNum($('a2-obj').value) !== null && toNum($('a2-disc').value) !== null
+        ? (toNum($('a2-obj').value) * 0.4 + toNum($('a2-disc').value) * 0.6) : null;
+      if(nota2a !== null && mdBaseForExame !== null) baseMD = Math.max(mdBaseForExame, nota2a);
+    }
+
+    if(notaEx === null || baseMD === null){
+      $('out-me').textContent = '—';
+      renderMarker($('marker-track-me'), null, '');
+      hide(cardRCP);
+      $('verdict-ex').innerHTML = '';
+      $('verdict-ex').className = 'verdict';
+      return;
+    }
+
+    var me = (baseMD + notaEx) / 2;
+    $('out-me').textContent = fmt(me);
+    renderMarker($('marker-track-me'), me, fmt(me));
+
+    var v = $('verdict-ex');
+    hide(cardRCP);
+    if(me >= 50){
+      v.className = 'verdict pass';
+      v.innerHTML = '<strong>Aprovado no exame</strong>ME = ' + fmt(me) + ', igual ou maior que 50.';
+    } else {
+      v.className = 'verdict warn';
+      v.innerHTML = '<strong>ME abaixo de 50 — vá para a recuperação</strong>Será preciso solicitar a prova mista de Recuperação (RCP).';
+      show(cardRCP);
+    }
+  }
+
+  function recalcRCP(){
+    if(cardRCP.classList.contains('hidden')) return;
+    var notaRCP = calcMistaScore('rcp-obj','rcp-disc','err-rcp-obj','err-rcp-disc');
+    $('out-rcp').textContent = fmt(notaRCP);
+    var v = $('verdict-rcp');
+    hide(cardRT);
+    if(notaRCP === null){
+      v.innerHTML = ''; v.className = 'verdict';
+      return;
+    }
+    if(notaRCP >= 50){
+      v.className = 'verdict pass';
+      v.innerHTML = '<strong>Aprovado na recuperação</strong>Nota ' + fmt(notaRCP) + ', igual ou maior que 50.';
+    } else {
+      v.className = 'verdict fail';
+      v.innerHTML = '<strong>Reprovado</strong>Nota abaixo de 50 na recuperação — será necessário solicitar o Regime Tutorial.';
+      show(cardRT);
+    }
+  }
+
+  ['apol1','apol2','n2-obj','n2-disc'].forEach(function(id){
+    $(id).addEventListener('input', recalc);
+  });
+  ['a2-obj','a2-disc'].forEach(function(id){
+    $(id).addEventListener('input', recalc2a);
+  });
+  ['ex-obj','ex-disc'].forEach(function(id){
+    $(id).addEventListener('input', recalcExame);
+  });
+  ['rcp-obj','rcp-disc'].forEach(function(id){
+    $(id).addEventListener('input', recalcRCP);
+  });
+
+  $('reset-btn').addEventListener('click', function(){
+    document.querySelectorAll('input[type="number"]').forEach(function(inp){ inp.value=''; inp.classList.remove('err'); });
+    document.querySelectorAll('.field-err').forEach(function(e){ e.textContent=''; });
+    document.querySelectorAll('.choice-btn').forEach(function(b){ b.classList.remove('active'); });
+    currentChoice = null;
+    mdBaseForExame = null;
+    hide(cardMD); hide(cardBranch); hide(card2a); hide(cardExame); hide(cardRCP); hide(cardRT);
+    $('out-n1').textContent='—'; $('out-n2').textContent='—';
+  });
+
+})();
+</script>
+</body>
+</html>
